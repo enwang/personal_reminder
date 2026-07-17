@@ -42,10 +42,20 @@ const parseCookies = (cookieHeader = '') =>
 const signValue = (value) =>
   crypto.createHmac('sha256', process.env.AUTH_SECRET || 'dev-secret').update(value).digest('hex');
 
+const encodePayload = (payload) => Buffer.from(JSON.stringify(payload)).toString('base64url');
+
+const decodePayload = (value) => {
+  try {
+    return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
+  } catch {
+    return null;
+  }
+};
+
 const createAuthToken = (user) => {
   const expiresAt = Date.now() + AUTH_TTL_SECONDS * 1000;
-  const value = `auth.${expiresAt}.${user.id}.${user.username}`;
-  return `${value}.${signValue(value)}`;
+  const payload = encodePayload({ expiresAt, id: user.id, username: user.username });
+  return `${payload}.${signValue(payload)}`;
 };
 
 const getSessionFromToken = (token) => {
@@ -53,20 +63,21 @@ const getSessionFromToken = (token) => {
   if (!token) return null;
 
   const parts = token.split('.');
-  if (parts.length !== 5) return null;
+  if (parts.length !== 2) return null;
 
-  const value = `${parts[0]}.${parts[1]}.${parts[2]}.${parts[3]}`;
-  const signature = parts[4];
-  const expected = signValue(value);
+  const payloadValue = parts[0];
+  const signature = parts[1];
+  const expected = signValue(payloadValue);
   const isSignatureValid =
     signature.length === expected.length &&
     crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 
-  if (!isSignatureValid || Number(parts[1]) <= Date.now()) return null;
+  const payload = decodePayload(payloadValue);
+  if (!isSignatureValid || !payload || Number(payload.expiresAt) <= Date.now()) return null;
 
   return {
-    id: Number(parts[2]),
-    username: parts[3]
+    id: Number(payload.id),
+    username: payload.username
   };
 };
 
