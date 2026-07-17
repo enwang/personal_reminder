@@ -21,7 +21,8 @@ const normalizeReminder = (reminder) => ({
   reminder_offsets: reminder.reminder_offsets || DEFAULT_REMINDER_OFFSETS,
   remind_time: reminder.remind_time || process.env.DEFAULT_REMINDER_TIME || '08:00',
   contact_email: reminder.contact_email || '',
-  contact_phone: reminder.contact_phone || ''
+  contact_phone: reminder.contact_phone || '',
+  user_id: reminder.user_id || null
 });
 
 const runQuery = async (query) => {
@@ -56,14 +57,15 @@ const db = {
     );
     return count || 0;
   },
-  async listReminders() {
-    const { data } = await runQuery(
-      client.from('reminders').select('*').order('remind_date').order('remind_time')
-    );
+  async listReminders(userId) {
+    let query = client.from('reminders').select('*').order('remind_date').order('remind_time');
+    if (userId) query = query.eq('user_id', userId);
+
+    const { data } = await runQuery(query);
     return data.map(normalizeReminder);
   },
-  async createReminder(reminder) {
-    const saved = normalizeReminder(reminder);
+  async createReminder(userId, reminder) {
+    const saved = normalizeReminder({ ...reminder, user_id: userId });
     const { data } = await runQuery(
       client
         .from('reminders')
@@ -79,8 +81,8 @@ const db = {
     );
     return normalizeReminder(data);
   },
-  async updateReminder(id, reminder) {
-    const saved = normalizeReminder(reminder);
+  async updateReminder(userId, id, reminder) {
+    const saved = normalizeReminder({ ...reminder, user_id: userId });
     const { data } = await runQuery(
       client
         .from('reminders')
@@ -92,15 +94,23 @@ const db = {
           notify_sms: Boolean(saved.notify_sms)
         })
         .eq('id', id)
+        .eq('user_id', userId)
         .select()
         .maybeSingle()
     );
 
     return data ? normalizeReminder(data) : null;
   },
-  async deleteReminder(id) {
+  async deleteReminder(userId, id) {
+    const { data: reminder } = await runQuery(
+      client.from('reminders').select('id').eq('id', id).eq('user_id', userId).maybeSingle()
+    );
+    if (!reminder) return 0;
+
     await runQuery(client.from('notification_log').delete().eq('reminder_id', id));
-    const { data } = await runQuery(client.from('reminders').delete().eq('id', id).select('id'));
+    const { data } = await runQuery(
+      client.from('reminders').delete().eq('id', id).eq('user_id', userId).select('id')
+    );
     return data.length;
   },
   async hasSentReminder(reminderId, dueDate, offsetDays) {

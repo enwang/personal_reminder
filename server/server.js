@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const db = require('./db');
 const { configuredProviders, sendNotificationBundle } = require('./services/notifications');
-const { verifyPassword } = require('./services/passwords');
+const { hashPassword, verifyPassword } = require('./services/passwords');
 const {
   buildMessage,
   runDailyReminderCheck,
@@ -42,26 +42,32 @@ const parseCookies = (cookieHeader = '') =>
 const signValue = (value) =>
   crypto.createHmac('sha256', process.env.AUTH_SECRET || 'dev-secret').update(value).digest('hex');
 
-const createAuthToken = () => {
+const createAuthToken = (user) => {
   const expiresAt = Date.now() + AUTH_TTL_SECONDS * 1000;
-  const value = `auth.${expiresAt}`;
+  const value = `auth.${expiresAt}.${user.id}.${user.username}`;
   return `${value}.${signValue(value)}`;
 };
 
-const isValidAuthToken = (token) => {
-  if (!authEnabled() || !token) return !authEnabled();
+const getSessionFromToken = (token) => {
+  if (!authEnabled()) return { id: null, username: 'local' };
+  if (!token) return null;
 
   const parts = token.split('.');
-  if (parts.length !== 3) return false;
+  if (parts.length !== 5) return null;
 
-  const value = `${parts[0]}.${parts[1]}`;
-  const signature = parts[2];
+  const value = `${parts[0]}.${parts[1]}.${parts[2]}.${parts[3]}`;
+  const signature = parts[4];
   const expected = signValue(value);
   const isSignatureValid =
     signature.length === expected.length &&
     crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 
-  return isSignatureValid && Number(parts[1]) > Date.now();
+  if (!isSignatureValid || Number(parts[1]) <= Date.now()) return null;
+
+  return {
+    id: Number(parts[2]),
+    username: parts[3]
+  };
 };
 
 const setAuthCookie = (res, token) => {
@@ -86,11 +92,15 @@ const clearAuthCookie = (res) => {
 
 const isAuthenticated = (req) => {
   const cookies = parseCookies(req.get('cookie'));
-  return isValidAuthToken(cookies[AUTH_COOKIE]);
+  return getSessionFromToken(cookies[AUTH_COOKIE]);
 };
 
 const requireAuth = (req, res, next) => {
-  if (isAuthenticated(req)) return next();
+  const user = isAuthenticated(req);
+  if (user) {
+    req.user = user;
+    return next();
+  }
   return res.status(401).json({ error: 'Unauthorized' });
 };
 
@@ -117,10 +127,43 @@ const isValidReminderSchedule = (reminder) => {
 };
 
 app.get('/api/auth-status', (req, res) => {
+  const user = isAuthenticated(req);
   res.json({
     auth_enabled: authEnabled(),
-    authenticated: isAuthenticated(req)
+    authenticated: Boolean(user),
+    username: user?.username || null
   });
+});
+
+app.post('/api/signup', async (req, res) => {
+  if (!authEnabled()) {
+    return res.json({ success: true, auth_enabled: false });
+  }
+
+  const username = req.body?.username?.trim();
+  const password = req.body?.password || '';
+
+  if (!username || username.length < 3) {
+    return res.status(400).json({ error: 'Username must be at least 3 characters' });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  }
+
+  const existing = await db.getUserByUsername(username);
+  if (existing) {
+    return res.status(409).json({ error: 'Username is already taken' });
+  }
+
+  try {
+    const password_hash = await hashPassword(password);
+    const user = await db.createUser({ username, password_hash });
+    setAuthCookie(res, createAuthToken(user));
+    res.status(201).json({ success: true, username: user.username });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/login', async (req, res) => {
@@ -137,8 +180,8 @@ app.post('/api/login', async (req, res) => {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
 
-  setAuthCookie(res, createAuthToken());
-  res.json({ success: true, auth_enabled: true });
+  setAuthCookie(res, createAuthToken(user));
+  res.json({ success: true, auth_enabled: true, username: user.username });
 });
 
 app.post('/api/logout', (req, res) => {
@@ -163,7 +206,7 @@ app.get('/api/health', requireAuth, async (req, res) => {
 
 app.get('/api/reminders', requireAuth, async (req, res) => {
   try {
-    const rows = await db.listReminders();
+    const rows = await db.listReminders(req.user.id);
 
     res.json(rows);
   } catch (err) {
@@ -183,7 +226,7 @@ app.post('/api/reminders', requireAuth, async (req, res) => {
   }
 
   try {
-    const saved = await db.createReminder(reminder);
+    const saved = await db.createReminder(req.user.id, reminder);
 
     res.status(201).json(saved);
   } catch (err) {
@@ -204,7 +247,7 @@ app.put('/api/reminders/:id', requireAuth, async (req, res) => {
   }
 
   try {
-    const saved = await db.updateReminder(id, reminder);
+    const saved = await db.updateReminder(req.user.id, id, reminder);
 
     if (!saved) {
       return res.status(404).json({ error: 'Reminder not found' });
@@ -220,7 +263,7 @@ app.delete('/api/reminders/:id', requireAuth, async (req, res) => {
   const id = req.params.id;
 
   try {
-    await db.deleteReminder(id);
+    await db.deleteReminder(req.user.id, id);
 
     res.json({ success: true });
   } catch (err) {

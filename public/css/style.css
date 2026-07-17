@@ -61,6 +61,11 @@ header p {
   color: #1f2c2a;
 }
 
+.login-form .btn-primary,
+.login-form .btn-secondary {
+  width: 100%;
+}
+
 .login-error {
   min-height: 1.2em;
   color: #b42318;

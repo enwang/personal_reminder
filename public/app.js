@@ -2,8 +2,11 @@ const API_URL = '/api';
 
 const loginScreen = document.getElementById('loginScreen');
 const loginForm = document.getElementById('loginForm');
+const loginTitle = document.getElementById('loginTitle');
 const loginUsernameInput = document.getElementById('login_username');
 const loginPasswordInput = document.getElementById('login_password');
+const loginSubmit = document.getElementById('loginSubmit');
+const toggleSignupButton = document.getElementById('toggleSignup');
 const loginError = document.getElementById('loginError');
 const appContainer = document.querySelector('.container');
 const logoutButton = document.getElementById('logoutButton');
@@ -28,6 +31,7 @@ const refreshStatusButton = document.getElementById('refreshStatus');
 const testButtons = document.querySelectorAll('[data-test-channel]');
 let remindersCache = [];
 let editingReminderId = null;
+let isSignupMode = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
@@ -38,7 +42,7 @@ loginForm.addEventListener('submit', async (e) => {
   loginError.textContent = '';
 
   try {
-    const response = await fetch(`${API_URL}/login`, {
+    const response = await fetch(`${API_URL}/${isSignupMode ? 'signup' : 'login'}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -54,6 +58,8 @@ loginForm.addEventListener('submit', async (e) => {
     }
 
     loginPasswordInput.value = '';
+    isSignupMode = false;
+    updateAuthMode();
     showApp();
     await loadReminders();
     await loadStatus();
@@ -61,6 +67,12 @@ loginForm.addEventListener('submit', async (e) => {
     console.error('Login error:', error);
     loginError.textContent = 'Connection error';
   }
+});
+
+toggleSignupButton.addEventListener('click', () => {
+  isSignupMode = !isSignupMode;
+  loginError.textContent = '';
+  updateAuthMode();
 });
 
 logoutButton.addEventListener('click', async () => {
@@ -286,6 +298,7 @@ function showLogin() {
   logoutButton.classList.add('hidden');
   loginScreen.classList.remove('hidden');
   loginPasswordInput.value = '';
+  updateAuthMode();
   loginUsernameInput.focus();
 }
 
@@ -294,6 +307,13 @@ function showApp() {
   appContainer.classList.remove('hidden');
   logoutButton.classList.remove('hidden');
   loginError.textContent = '';
+}
+
+function updateAuthMode() {
+  loginTitle.textContent = isSignupMode ? 'Create Account' : 'Personal Reminder';
+  loginSubmit.textContent = isSignupMode ? 'Create Account' : 'Log In';
+  toggleSignupButton.textContent = isSignupMode ? 'I already have an account' : 'Create Account';
+  loginPasswordInput.autocomplete = isSignupMode ? 'new-password' : 'current-password';
 }
 
 function statusItem(label, enabled) {

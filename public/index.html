@@ -9,10 +9,11 @@
 <body>
   <section class="login-screen hidden" id="loginScreen">
     <form class="login-form" id="loginForm">
-      <h1>Personal Reminder</h1>
+      <h1 id="loginTitle">Personal Reminder</h1>
       <input type="text" id="login_username" placeholder="Username" autocomplete="username" required>
       <input type="password" id="login_password" placeholder="Password" autocomplete="current-password" required>
-      <button type="submit" class="btn-primary">Log In</button>
+      <button type="submit" class="btn-primary" id="loginSubmit">Log In</button>
+      <button type="button" class="btn-secondary" id="toggleSignup">Create Account</button>
       <p id="loginError" class="login-error"></p>
     </form>
   </section>
