@@ -1,0 +1,411 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #eef3f1;
+  min-height: 100vh;
+  padding: 20px;
+  color: #26312f;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  color: #1f2c2a;
+  margin-bottom: 40px;
+  padding: 20px 0;
+}
+
+header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+header p {
+  font-size: 1.1em;
+  opacity: 0.9;
+}
+
+main {
+  display: grid;
+  gap: 30px;
+}
+
+section {
+  background: white;
+  border: 1px solid #dce5e1;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(29, 51, 46, 0.08);
+}
+
+section h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+/* Form Styles */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="time"] {
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus {
+  outline: none;
+  border-color: #2b8a78;
+}
+
+.date-row,
+.contact-row,
+.channel-group,
+.offset-group,
+.test-actions,
+.section-heading {
+  display: flex;
+  gap: 12px;
+}
+
+.date-row input,
+.contact-row input {
+  flex: 1;
+}
+
+.channel-group,
+.offset-group {
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #f6f8f7;
+  border: 1px solid #e1e8e5;
+  border-radius: 8px;
+}
+
+.group-label {
+  width: 100%;
+  color: #4d5b57;
+  font-size: 0.9em;
+  font-weight: 700;
+}
+
+.section-heading {
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-heading h2 {
+  margin-bottom: 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.95em;
+  color: #555;
+}
+
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  padding: 12px 24px;
+  background: #2b8a78;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(43, 138, 120, 0.28);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  padding: 10px 14px;
+  background: #fff;
+  color: #26312f;
+  border: 1px solid #c8d5d1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  border-color: #2b8a78;
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 0.9em;
+}
+
+.status-panel {
+  margin-bottom: 14px;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.status-grid div {
+  padding: 12px;
+  background: #f6f8f7;
+  border: 1px solid #e1e8e5;
+  border-radius: 8px;
+}
+
+.status-grid strong,
+.status-grid span {
+  display: block;
+}
+
+.status-grid strong {
+  color: #1f2c2a;
+}
+
+.status-grid span {
+  color: #66736f;
+  font-size: 0.86em;
+  margin-top: 3px;
+}
+
+.status-ok {
+  border-color: #b7ddd3 !important;
+}
+
+.status-muted {
+  opacity: 0.7;
+}
+
+/* Reminder List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reminder-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  background: #f8f9fa;
+  border-left: 4px solid #2b8a78;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.reminder-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.reminder-content {
+  flex: 1;
+}
+
+.reminder-title {
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1em;
+  margin-bottom: 4px;
+}
+
+.reminder-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.reminder-date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.reminder-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #365f8c;
+  color: white;
+  border-radius: 999px;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.channel-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #e6efec;
+  color: #2b5f55;
+  border-radius: 999px;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.reminder-description {
+  margin-top: 8px;
+  color: #4d5b57;
+}
+
+.contact-summary {
+  margin-top: 8px;
+  color: #66736f;
+  font-size: 0.86em;
+}
+
+.job-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  color: #66736f;
+  font-size: 0.86em;
+}
+
+.job-error {
+  color: #b42318;
+}
+
+.reminder-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-delete {
+  padding: 8px 12px;
+  background: #b42318;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.2s;
+}
+
+.btn-delete:hover {
+  background: #8d1c13;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-style: italic;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  max-width: min(360px, calc(100vw - 40px));
+  padding: 16px 20px;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+}
+
+.toast-success {
+  background: #2b8a78;
+}
+
+.toast-error {
+  background: #b42318;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 1.8em;
+  }
+
+  section {
+    padding: 20px;
+  }
+
+  .date-row,
+  .contact-row,
+  .form-actions,
+  .test-actions,
+  .section-heading {
+    flex-direction: column;
+  }
+
+  .reminder-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .reminder-actions {
+    width: 100%;
+  }
+
+  .btn-delete {
+    width: 100%;
+  }
+}

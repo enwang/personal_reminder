@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Reminder</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📅 Personal Reminder</h1>
+      <p>Never miss important dates again</p>
+    </header>
+
+    <main>
+      <section class="add-reminder">
+        <h2>Add New Reminder</h2>
+        <form id="reminderForm">
+          <input type="text" id="title" placeholder="e.g., Property Tax" required>
+          <input type="text" id="description" placeholder="Optional details">
+          <div class="contact-row">
+            <input type="text" id="contact_email" placeholder="Emails, comma separated (uses default if blank)">
+            <input type="tel" id="contact_phone" placeholder="Phone (uses default if blank)">
+          </div>
+          <div class="date-row">
+            <input type="date" id="remind_date" required>
+            <input type="time" id="remind_time" value="08:00" required>
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" id="is_recurring" checked>
+            Recurring annually
+          </label>
+          <div class="offset-group" aria-label="Reminder timing">
+            <span class="group-label">Remind me</span>
+            <label class="checkbox">
+              <input type="checkbox" name="reminder_offset" value="30" checked>
+              30 days before
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="reminder_offset" value="7" checked>
+              7 days before
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="reminder_offset" value="1" checked>
+              1 day before
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="reminder_offset" value="0" checked>
+              Due date
+            </label>
+          </div>
+          <div class="channel-group" aria-label="Notification channels">
+            <label class="checkbox">
+              <input type="checkbox" id="notify_email" checked>
+              Email
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="notify_push">
+              Phone push
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="notify_sms">
+              SMS
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submitReminder">Add Reminder</button>
+            <button type="button" class="btn-secondary hidden" id="cancelEdit">Cancel Edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="delivery-status">
+        <div class="section-heading">
+          <h2>Delivery</h2>
+          <button type="button" class="btn-secondary" id="refreshStatus">Refresh</button>
+        </div>
+        <div id="statusPanel" class="status-panel">Checking delivery status...</div>
+        <div class="test-actions">
+          <button type="button" class="btn-secondary" data-test-channel="email">Test Email</button>
+          <button type="button" class="btn-secondary" data-test-channel="push">Test Push</button>
+          <button type="button" class="btn-secondary" data-test-channel="sms">Test SMS</button>
+        </div>
+      </section>
+
+      <section class="reminders-list">
+        <h2>Your Reminders</h2>
+        <div id="remindersList" class="list">
+          <p class="empty">No reminders yet. Add one above!</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
