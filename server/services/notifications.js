@@ -8,7 +8,6 @@ const parseRecipients = (value) =>
 
 const configuredProviders = () => ({
   email: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_TO),
-  push: Boolean(process.env.NTFY_TOPIC),
   sms: Boolean(
     process.env.TWILIO_ACCOUNT_SID &&
     process.env.TWILIO_AUTH_TOKEN &&
@@ -46,32 +45,6 @@ const sendEmail = async ({ subject, message, to }) => {
   } catch (error) {
     return {
       provider: 'email',
-      success: false,
-      error: error.response?.data?.message || error.message
-    };
-  }
-};
-
-const sendPush = async ({ subject, message }) => {
-  if (!configuredProviders().push) {
-    return { provider: 'push', skipped: true, error: 'ntfy push is not configured' };
-  }
-
-  try {
-    const baseUrl = process.env.NTFY_BASE_URL || 'https://ntfy.sh';
-    await axios.post(`${baseUrl.replace(/\/$/, '')}/${process.env.NTFY_TOPIC}`, message, {
-      headers: {
-        Title: subject,
-        Priority: process.env.NTFY_PRIORITY || 'default',
-        Tags: 'calendar'
-      },
-      timeout: 15000
-    });
-
-    return { provider: 'push', success: true };
-  } catch (error) {
-    return {
-      provider: 'push',
       success: false,
       error: error.response?.data?.message || error.message
     };
@@ -126,7 +99,6 @@ const sendNotificationBundle = async ({ reminder, subject, message }) => {
   const tasks = [];
 
   if (reminder.notify_email) tasks.push(sendEmail({ subject, message, to: reminder.contact_email }));
-  if (reminder.notify_push) tasks.push(sendPush({ subject, message }));
   if (reminder.notify_sms) tasks.push(sendSMS({ subject, message, to: reminder.contact_phone }));
 
   if (tasks.length === 0) {
@@ -149,7 +121,6 @@ module.exports = {
   configuredProviders,
   parseRecipients,
   sendEmail,
-  sendPush,
   sendSMS,
   sendNotificationBundle
 };

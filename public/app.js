@@ -22,7 +22,6 @@ const dateInput = document.getElementById('remind_date');
 const timeInput = document.getElementById('remind_time');
 const recurringCheckbox = document.getElementById('is_recurring');
 const emailCheckbox = document.getElementById('notify_email');
-const pushCheckbox = document.getElementById('notify_push');
 const smsCheckbox = document.getElementById('notify_sms');
 const offsetCheckboxes = document.querySelectorAll('input[name="reminder_offset"]');
 const remindersList = document.getElementById('remindersList');
@@ -93,7 +92,6 @@ reminderForm.addEventListener('submit', async (e) => {
     is_recurring: recurringCheckbox.checked,
     reminder_offsets: selectedOffsets(),
     notify_email: emailCheckbox.checked,
-    notify_push: pushCheckbox.checked,
     notify_sms: smsCheckbox.checked
   };
 
@@ -143,7 +141,6 @@ async function loadStatus() {
     statusPanel.innerHTML = `
       <div class="status-grid">
         ${statusItem('Email', providers.email)}
-        ${statusItem('Push', providers.push)}
         ${statusItem('SMS', providers.sms)}
         <div><strong>${status.sent_today}</strong><span>Sent today</span></div>
         <div><strong>${status.failed_notifications}</strong><span>Failed</span></div>
@@ -218,7 +215,6 @@ function editReminder(id) {
   timeInput.value = normalizeTime(reminder.remind_time);
   recurringCheckbox.checked = Boolean(reminder.is_recurring);
   emailCheckbox.checked = Boolean(reminder.notify_email);
-  pushCheckbox.checked = Boolean(reminder.notify_push);
   smsCheckbox.checked = Boolean(reminder.notify_sms);
   setOffsetCheckboxes(reminder.reminder_offsets);
 
@@ -251,7 +247,6 @@ async function deleteReminder(id) {
 async function testNotification(channel) {
   const payload = {
     notify_email: channel === 'email',
-    notify_push: channel === 'push',
     notify_sms: channel === 'sms'
   };
 
@@ -328,7 +323,6 @@ function statusItem(label, enabled) {
 function channelBadges(reminder) {
   const channels = [];
   if (reminder.notify_email) channels.push('Email');
-  if (reminder.notify_push) channels.push('Push');
   if (reminder.notify_sms) channels.push('SMS');
   return channels.map((channel) => `<span class="channel-badge">${channel}</span>`).join('');
 }
@@ -360,7 +354,6 @@ function resetForm() {
   timeInput.value = '08:00';
   recurringCheckbox.checked = true;
   emailCheckbox.checked = true;
-  pushCheckbox.checked = false;
   smsCheckbox.checked = false;
   setOffsetCheckboxes('30,7,1,0');
 }

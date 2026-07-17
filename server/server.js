@@ -125,7 +125,6 @@ const reminderFromBody = (body) => ({
   contact_email: body.contact_email?.trim() || '',
   contact_phone: body.contact_phone?.trim() || '',
   notify_email: body.notify_email === undefined ? 1 : toBoolean(body.notify_email),
-  notify_push: toBoolean(body.notify_push),
   notify_sms: toBoolean(body.notify_sms)
 });
 
@@ -287,7 +286,6 @@ app.post('/api/test-notification', requireAuth, async (req, res) => {
     title: 'Test notification',
     description: 'Your personal reminder notifications are connected.',
     notify_email: req.body.notify_email === undefined ? 1 : toBoolean(req.body.notify_email),
-    notify_push: toBoolean(req.body.notify_push),
     notify_sms: toBoolean(req.body.notify_sms)
   };
 

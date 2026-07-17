@@ -1,6 +1,6 @@
 # 📅 Personal Reminder
 
-A simple web application to manage personal reminders (property tax, home insurance, etc.) and receive email, phone push, or SMS notifications on scheduled dates.
+A simple web application to manage personal reminders (property tax, home insurance, etc.) and receive email or SMS notifications on scheduled dates.
 
 ## Features
 
@@ -10,7 +10,7 @@ A simple web application to manage personal reminders (property tax, home insura
 ✅ Mark reminders as recurring (annually)  
 ✅ Delete reminders  
 ✅ Daily due-reminder checker  
-✅ Email, phone push, and optional SMS notifications  
+✅ Email and optional SMS notifications
 ✅ Test notification buttons  
 ✅ Clean, responsive web interface  
 
@@ -40,10 +40,6 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 # Email via Resend
 RESEND_API_KEY=your_resend_api_key
 EMAIL_FROM=Personal Reminder <onboarding@resend.dev>
-
-# Free phone push via ntfy
-NTFY_TOPIC=your-private-topic-name
-NTFY_BASE_URL=https://ntfy.sh
 
 # Optional SMS via Twilio
 TWILIO_ACCOUNT_SID=your_sid
@@ -119,13 +115,6 @@ Set `AUTH_SECRET` in local and production env vars. It signs the HTTP-only login
 2. Get API key
 3. Add `RESEND_API_KEY`, `EMAIL_TO`, and `EMAIL_FROM` to `.env`
 
-### Phone Push (ntfy - Free)
-
-1. Install the ntfy phone app
-2. Pick a private topic name
-3. Add `NTFY_TOPIC=your-private-topic-name` to `.env`
-4. Subscribe to the same topic in the ntfy app
-
 ### SMS (Twilio - Optional)
 
 1. Sign up at [twilio.com](https://www.twilio.com)
@@ -138,7 +127,7 @@ Set `AUTH_SECRET` in local and production env vars. It signs the HTTP-only login
    PHONE_NUMBER=+1234567890
    ```
 
-SMS usually is not permanently free. Use ntfy push if you want free phone notifications.
+SMS usually is not permanently free, so email is the best free default channel.
 
 ## Tech Stack
 
@@ -161,7 +150,7 @@ personal_reminder/
 │   ├── server.js (main app)
 │   ├── db.js (Supabase database adapter)
 │   └── services/
-│       ├── notifications.js (email/push/SMS providers)
+│       ├── notifications.js (email/SMS providers)
 │       └── reminderJobs.js (daily due-reminder logic)
 ├── supabase/
 │   └── schema.sql

@@ -12,18 +12,21 @@ const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVI
   }
 });
 
-const normalizeReminder = (reminder) => ({
-  ...reminder,
-  is_recurring: reminder.is_recurring ? 1 : 0,
-  notify_email: reminder.notify_email ? 1 : 0,
-  notify_push: reminder.notify_push ? 1 : 0,
-  notify_sms: reminder.notify_sms ? 1 : 0,
-  reminder_offsets: reminder.reminder_offsets || DEFAULT_REMINDER_OFFSETS,
-  remind_time: reminder.remind_time || process.env.DEFAULT_REMINDER_TIME || '08:00',
-  contact_email: reminder.contact_email || '',
-  contact_phone: reminder.contact_phone || '',
-  user_id: reminder.user_id || null
-});
+const normalizeReminder = (reminder) => {
+  const { notify_push, ...rest } = reminder;
+
+  return {
+    ...rest,
+    is_recurring: reminder.is_recurring ? 1 : 0,
+    notify_email: reminder.notify_email ? 1 : 0,
+    notify_sms: reminder.notify_sms ? 1 : 0,
+    reminder_offsets: reminder.reminder_offsets || DEFAULT_REMINDER_OFFSETS,
+    remind_time: reminder.remind_time || process.env.DEFAULT_REMINDER_TIME || '08:00',
+    contact_email: reminder.contact_email || '',
+    contact_phone: reminder.contact_phone || '',
+    user_id: reminder.user_id || null
+  };
+};
 
 const runQuery = async (query) => {
   const { data, error, count } = await query;
@@ -73,7 +76,6 @@ const db = {
           ...saved,
           is_recurring: Boolean(saved.is_recurring),
           notify_email: Boolean(saved.notify_email),
-          notify_push: Boolean(saved.notify_push),
           notify_sms: Boolean(saved.notify_sms)
         })
         .select()
@@ -90,7 +92,6 @@ const db = {
           ...saved,
           is_recurring: Boolean(saved.is_recurring),
           notify_email: Boolean(saved.notify_email),
-          notify_push: Boolean(saved.notify_push),
           notify_sms: Boolean(saved.notify_sms)
         })
         .eq('id', id)
