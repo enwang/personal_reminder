@@ -101,6 +101,18 @@ npm run setup-db
 
 The service role key must stay server-side only. Do not put it in browser JavaScript.
 
+## Login Setup
+
+Login users are stored in the Supabase `app_users` table. Passwords are stored as `scrypt` hashes.
+
+Create a user:
+
+```bash
+npm run create-user -- admin your-password
+```
+
+Set `AUTH_SECRET` in local and production env vars. It signs the HTTP-only login cookie.
+
 ### Email (Resend - Free)
 
 1. Sign up at [resend.com](https://resend.com)

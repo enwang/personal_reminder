@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node server/server.js",
-    "setup-db": "node scripts/setup-supabase.js"
+    "setup-db": "node scripts/setup-supabase.js",
+    "create-user": "node scripts/create-user.js"
   },
   "keywords": [],
   "author": "",

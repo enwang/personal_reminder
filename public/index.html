@@ -7,10 +7,23 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <section class="login-screen hidden" id="loginScreen">
+    <form class="login-form" id="loginForm">
+      <h1>Personal Reminder</h1>
+      <input type="text" id="login_username" placeholder="Username" autocomplete="username" required>
+      <input type="password" id="login_password" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit" class="btn-primary">Log In</button>
+      <p id="loginError" class="login-error"></p>
+    </form>
+  </section>
+
   <div class="container">
     <header>
       <h1>📅 Personal Reminder</h1>
-      <p>Never miss important dates again</p>
+      <div class="header-row">
+        <p>Never miss important dates again</p>
+        <button type="button" class="btn-secondary btn-small hidden" id="logoutButton">Log Out</button>
+      </div>
     </header>
 
     <main>

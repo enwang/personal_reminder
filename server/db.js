@@ -122,6 +122,22 @@ const db = {
   async updateReminderLastNotified(id, date) {
     await runQuery(client.from('reminders').update({ last_notified: date }).eq('id', id));
   },
+  async getUserByUsername(username) {
+    const { data } = await runQuery(
+      client.from('app_users').select('*').eq('username', username).eq('is_active', true).maybeSingle()
+    );
+    return data;
+  },
+  async createUser({ username, password_hash }) {
+    const { data } = await runQuery(
+      client
+        .from('app_users')
+        .insert({ username, password_hash })
+        .select('id, username, created_at, is_active')
+        .single()
+    );
+    return data;
+  },
   close(callback) {
     if (callback) callback();
   }

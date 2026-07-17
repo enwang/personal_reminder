@@ -34,6 +34,39 @@ header p {
   opacity: 0.9;
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.login-screen {
+  min-height: calc(100vh - 40px);
+  display: grid;
+  place-items: center;
+}
+
+.login-form {
+  width: min(420px, 100%);
+  background: white;
+  border: 1px solid #dce5e1;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(29, 51, 46, 0.08);
+}
+
+.login-form h1 {
+  font-size: 1.8em;
+  color: #1f2c2a;
+}
+
+.login-error {
+  min-height: 1.2em;
+  color: #b42318;
+  font-size: 0.92em;
+}
+
 main {
   display: grid;
   gap: 30px;
@@ -63,6 +96,7 @@ form {
 input[type="text"],
 input[type="email"],
 input[type="tel"],
+input[type="password"],
 input[type="date"],
 input[type="time"] {
   padding: 12px;
@@ -75,6 +109,7 @@ input[type="time"] {
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="tel"]:focus,
+input[type="password"]:focus,
 input[type="date"]:focus,
 input[type="time"]:focus {
   outline: none;
@@ -392,6 +427,10 @@ input[type="checkbox"] {
   .form-actions,
   .test-actions,
   .section-heading {
+    flex-direction: column;
+  }
+
+  .header-row {
     flex-direction: column;
   }
 

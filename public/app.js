@@ -1,5 +1,12 @@
 const API_URL = '/api';
 
+const loginScreen = document.getElementById('loginScreen');
+const loginForm = document.getElementById('loginForm');
+const loginUsernameInput = document.getElementById('login_username');
+const loginPasswordInput = document.getElementById('login_password');
+const loginError = document.getElementById('loginError');
+const appContainer = document.querySelector('.container');
+const logoutButton = document.getElementById('logoutButton');
 const reminderForm = document.getElementById('reminderForm');
 const formTitle = document.querySelector('.add-reminder h2');
 const submitReminderButton = document.getElementById('submitReminder');
@@ -23,8 +30,42 @@ let remindersCache = [];
 let editingReminderId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadReminders();
-  loadStatus();
+  checkAuth();
+});
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loginError.textContent = '';
+
+  try {
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: loginUsernameInput.value.trim(),
+        password: loginPasswordInput.value
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      loginError.textContent = error.error || 'Login failed';
+      return;
+    }
+
+    loginPasswordInput.value = '';
+    showApp();
+    await loadReminders();
+    await loadStatus();
+  } catch (error) {
+    console.error('Login error:', error);
+    loginError.textContent = 'Connection error';
+  }
+});
+
+logoutButton.addEventListener('click', async () => {
+  await fetch(`${API_URL}/logout`, { method: 'POST' });
+  showLogin();
 });
 
 reminderForm.addEventListener('submit', async (e) => {
@@ -80,6 +121,10 @@ testButtons.forEach((button) => {
 async function loadStatus() {
   try {
     const response = await fetch(`${API_URL}/health`);
+    if (response.status === 401) {
+      showLogin();
+      return;
+    }
     const status = await response.json();
     const providers = status.providers;
 
@@ -101,6 +146,10 @@ async function loadStatus() {
 async function loadReminders() {
   try {
     const response = await fetch(`${API_URL}/reminders`);
+    if (response.status === 401) {
+      showLogin();
+      return;
+    }
     const reminders = await response.json();
     remindersCache = reminders;
 
@@ -212,6 +261,39 @@ async function testNotification(channel) {
     console.error('Error:', error);
     showNotification('Connection error', true);
   }
+}
+
+async function checkAuth() {
+  try {
+    const response = await fetch(`${API_URL}/auth-status`);
+    const status = await response.json();
+
+    if (!status.auth_enabled || status.authenticated) {
+      showApp();
+      await loadReminders();
+      await loadStatus();
+    } else {
+      showLogin();
+    }
+  } catch (error) {
+    console.error('Auth status error:', error);
+    showLogin();
+  }
+}
+
+function showLogin() {
+  appContainer.classList.add('hidden');
+  logoutButton.classList.add('hidden');
+  loginScreen.classList.remove('hidden');
+  loginPasswordInput.value = '';
+  loginUsernameInput.focus();
+}
+
+function showApp() {
+  loginScreen.classList.add('hidden');
+  appContainer.classList.remove('hidden');
+  logoutButton.classList.remove('hidden');
+  loginError.textContent = '';
 }
 
 function statusItem(label, enabled) {

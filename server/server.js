@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 const os = require('os');
 const path = require('path');
 require('dotenv').config();
 
 const db = require('./db');
 const { configuredProviders, sendNotificationBundle } = require('./services/notifications');
+const { verifyPassword } = require('./services/passwords');
 const {
   buildMessage,
   runDailyReminderCheck,
@@ -15,12 +17,82 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
+const AUTH_COOKIE = 'personal_reminder_auth';
+const AUTH_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 const toBoolean = (value) => (value === true || value === 'true' || value === 1 ? 1 : 0);
+const authEnabled = () => Boolean(process.env.AUTH_SECRET);
+
+const parseCookies = (cookieHeader = '') =>
+  Object.fromEntries(
+    cookieHeader
+      .split(';')
+      .map((cookie) => cookie.trim())
+      .filter(Boolean)
+      .map((cookie) => {
+        const index = cookie.indexOf('=');
+        return [cookie.slice(0, index), decodeURIComponent(cookie.slice(index + 1))];
+      })
+  );
+
+const signValue = (value) =>
+  crypto.createHmac('sha256', process.env.AUTH_SECRET || 'dev-secret').update(value).digest('hex');
+
+const createAuthToken = () => {
+  const expiresAt = Date.now() + AUTH_TTL_SECONDS * 1000;
+  const value = `auth.${expiresAt}`;
+  return `${value}.${signValue(value)}`;
+};
+
+const isValidAuthToken = (token) => {
+  if (!authEnabled() || !token) return !authEnabled();
+
+  const parts = token.split('.');
+  if (parts.length !== 3) return false;
+
+  const value = `${parts[0]}.${parts[1]}`;
+  const signature = parts[2];
+  const expected = signValue(value);
+  const isSignatureValid =
+    signature.length === expected.length &&
+    crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+
+  return isSignatureValid && Number(parts[1]) > Date.now();
+};
+
+const setAuthCookie = (res, token) => {
+  const secure = process.env.NODE_ENV === 'production';
+  res.cookie(AUTH_COOKIE, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure,
+    maxAge: AUTH_TTL_SECONDS * 1000,
+    path: '/'
+  });
+};
+
+const clearAuthCookie = (res) => {
+  res.clearCookie(AUTH_COOKIE, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/'
+  });
+};
+
+const isAuthenticated = (req) => {
+  const cookies = parseCookies(req.get('cookie'));
+  return isValidAuthToken(cookies[AUTH_COOKIE]);
+};
+
+const requireAuth = (req, res, next) => {
+  if (isAuthenticated(req)) return next();
+  return res.status(401).json({ error: 'Unauthorized' });
+};
 
 const reminderFromBody = (body) => ({
   title: body.title?.trim(),
@@ -44,7 +116,37 @@ const isValidReminderSchedule = (reminder) => {
   return !Number.isNaN(scheduledAt.getTime());
 };
 
-app.get('/api/health', async (req, res) => {
+app.get('/api/auth-status', (req, res) => {
+  res.json({
+    auth_enabled: authEnabled(),
+    authenticated: isAuthenticated(req)
+  });
+});
+
+app.post('/api/login', async (req, res) => {
+  if (!authEnabled()) {
+    return res.json({ success: true, auth_enabled: false });
+  }
+
+  const username = req.body?.username?.trim() || '';
+  const password = req.body?.password || '';
+  const user = username ? await db.getUserByUsername(username) : null;
+  const isMatch = user ? await verifyPassword(password, user.password_hash) : false;
+
+  if (!isMatch) {
+    return res.status(401).json({ error: 'Invalid username or password' });
+  }
+
+  setAuthCookie(res, createAuthToken());
+  res.json({ success: true, auth_enabled: true });
+});
+
+app.post('/api/logout', (req, res) => {
+  clearAuthCookie(res);
+  res.json({ success: true });
+});
+
+app.get('/api/health', requireAuth, async (req, res) => {
   const failed = await db.countFailedNotifications();
   const sentToday = await db.countSentToday();
 
@@ -59,7 +161,7 @@ app.get('/api/health', async (req, res) => {
   });
 });
 
-app.get('/api/reminders', async (req, res) => {
+app.get('/api/reminders', requireAuth, async (req, res) => {
   try {
     const rows = await db.listReminders();
 
@@ -69,7 +171,7 @@ app.get('/api/reminders', async (req, res) => {
   }
 });
 
-app.post('/api/reminders', async (req, res) => {
+app.post('/api/reminders', requireAuth, async (req, res) => {
   const reminder = reminderFromBody(req.body);
 
   if (!reminder.title || !reminder.remind_date) {
@@ -89,7 +191,7 @@ app.post('/api/reminders', async (req, res) => {
   }
 });
 
-app.put('/api/reminders/:id', async (req, res) => {
+app.put('/api/reminders/:id', requireAuth, async (req, res) => {
   const id = req.params.id;
   const reminder = reminderFromBody(req.body);
 
@@ -114,7 +216,7 @@ app.put('/api/reminders/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/reminders/:id', async (req, res) => {
+app.delete('/api/reminders/:id', requireAuth, async (req, res) => {
   const id = req.params.id;
 
   try {
@@ -126,7 +228,7 @@ app.delete('/api/reminders/:id', async (req, res) => {
   }
 });
 
-app.post('/api/test-notification', async (req, res) => {
+app.post('/api/test-notification', requireAuth, async (req, res) => {
   const reminder = {
     title: 'Test notification',
     description: 'Your personal reminder notifications are connected.',
@@ -146,7 +248,11 @@ app.post('/api/test-notification', async (req, res) => {
 });
 
 const runDueRemindersHandler = async (req, res) => {
-  if (process.env.CRON_SECRET && req.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+  const hasCronAuth =
+    req.get('x-vercel-cron') === '1' ||
+    (process.env.CRON_SECRET && req.get('authorization') === `Bearer ${process.env.CRON_SECRET}`);
+
+  if (process.env.CRON_SECRET && !hasCronAuth) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
