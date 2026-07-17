@@ -10,6 +10,7 @@ body {
   min-height: 100vh;
   padding: 20px;
   color: #26312f;
+  line-height: 1.45;
 }
 
 .container {
@@ -107,8 +108,9 @@ input[type="time"] {
   padding: 12px;
   border: 2px solid #e0e0e0;
   border-radius: 6px;
-  font-size: 1em;
+  font-size: 1rem;
   transition: border-color 0.3s;
+  min-height: 48px;
 }
 
 input[type="text"]:focus,
@@ -196,6 +198,7 @@ input[type="checkbox"] {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  min-height: 44px;
 }
 
 .btn-primary:hover {
@@ -215,6 +218,7 @@ input[type="checkbox"] {
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  min-height: 44px;
 }
 
 .btn-secondary:hover {
@@ -372,6 +376,7 @@ input[type="checkbox"] {
   cursor: pointer;
   font-size: 0.9em;
   transition: background 0.2s;
+  min-height: 44px;
 }
 
 .btn-delete:hover {
@@ -419,12 +424,59 @@ input[type="checkbox"] {
 
 /* Responsive */
 @media (max-width: 600px) {
+  body {
+    padding: 10px;
+    background: #f4f7f6;
+  }
+
+  .container {
+    width: 100%;
+  }
+
+  header {
+    margin-bottom: 14px;
+    padding: 8px 0 12px;
+    text-align: left;
+  }
+
   header h1 {
-    font-size: 1.8em;
+    font-size: 1.65rem;
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+
+  header p {
+    font-size: 0.95rem;
+  }
+
+  main {
+    gap: 14px;
   }
 
   section {
-    padding: 20px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(29, 51, 46, 0.06);
+  }
+
+  section h2 {
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+  }
+
+  form {
+    gap: 12px;
+  }
+
+  .login-screen {
+    min-height: calc(100vh - 20px);
+  }
+
+  .login-form {
+    padding: 22px 16px;
+  }
+
+  .login-form h1 {
+    font-size: 1.5rem;
   }
 
   .date-row,
@@ -436,20 +488,126 @@ input[type="checkbox"] {
   }
 
   .header-row {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-row .btn-small {
+    flex: 0 0 auto;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"] {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .channel-group,
+  .offset-group {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .offset-group .checkbox {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 128px;
+  }
+
+  .channel-group .checkbox {
+    flex: 1 1 120px;
+  }
+
+  .checkbox {
+    min-height: 42px;
+    color: #34413e;
+  }
+
+  .form-actions,
+  .test-actions {
+    gap: 8px;
+  }
+
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary,
+  .test-actions .btn-secondary {
+    width: 100%;
+  }
+
+  .section-heading {
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .section-heading .btn-secondary {
+    width: 100%;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .reminder-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+    padding: 14px;
+  }
+
+  .reminder-content {
+    width: 100%;
+  }
+
+  .reminder-title {
+    font-size: 1rem;
+  }
+
+  .reminder-meta {
+    gap: 8px;
+  }
+
+  .contact-summary,
+  .job-status {
+    overflow-wrap: anywhere;
   }
 
   .reminder-actions {
     width: 100%;
   }
 
+  .reminder-actions .btn-secondary,
   .btn-delete {
-    width: 100%;
+    flex: 1;
+    width: auto;
+  }
+
+  .toast {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 380px) {
+  body {
+    padding: 8px;
+  }
+
+  section {
+    padding: 14px;
+  }
+
+  .offset-group .checkbox {
+    flex-basis: 100%;
+  }
+
+  .header-row {
+    flex-direction: column;
   }
 }
