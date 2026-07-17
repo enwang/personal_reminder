@@ -170,17 +170,21 @@ const getLocalNetworkUrls = () => {
     .map((details) => `http://${details.address}:${PORT}`);
 };
 
-const server = app.listen(PORT, HOST, () => {
-  const networkUrls = getLocalNetworkUrls();
+if (require.main === module) {
+  const server = app.listen(PORT, HOST, () => {
+    const networkUrls = getLocalNetworkUrls();
 
-  console.log(`Server running on http://localhost:${PORT}`);
-  networkUrls.forEach((url) => console.log(`Network URL: ${url}`));
-  console.log('Daily reminder checker available at /api/run-due-reminders');
-});
+    console.log(`Server running on http://localhost:${PORT}`);
+    networkUrls.forEach((url) => console.log(`Network URL: ${url}`));
+    console.log('Daily reminder checker available at /api/run-due-reminders');
+  });
 
-const shutdown = () => {
-  server.close(() => db.close(() => process.exit(0)));
-};
+  const shutdown = () => {
+    server.close(() => db.close(() => process.exit(0)));
+  };
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
+
+module.exports = app;
